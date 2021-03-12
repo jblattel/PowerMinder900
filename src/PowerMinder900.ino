@@ -47,8 +47,6 @@ typedef struct {
 Payload theData;
 
 
-
-
 //END RADIO STUFF *******************************************************************************
 
 #define PERCENT_STRING_SIZE 5
@@ -84,12 +82,6 @@ http_header_t headers[] = {
 http_request_t request;
 http_response_t response;
 
-http_request_t request2;
-http_response_t response2;
-
-http_request_t request3;
-http_response_t response3;
-
 void setmsgBuffer(uint8_t textSize){
     display.setTextSize(textSize);
     display.setTextColor(WHITE);
@@ -97,11 +89,21 @@ void setmsgBuffer(uint8_t textSize){
     display.println(lineTwo);
     display.setCursor(0,0);
     display.println(lineOne);
-    Serial.print(lineOne);
     if (strcmp(lineOne, "WAITING ON")!=0){
         display.setCursor(90,0);
-        snprintf(percentString, sizeof(percentString), "%s%s", percentString, "%");
-        display.println(percentString);
+        if (theData.percentage == 100){
+            display.setTextSize(1);
+            //display.setCursor(80,18);
+            snprintf(percentString, sizeof(percentString), "%s%s", percentString, "%");
+            display.println(percentString);
+        
+        }
+        else {
+            snprintf(percentString, sizeof(percentString), "%s%s", percentString, "%");
+            display.println(percentString);
+        }
+        
+      
     }
     
 }
@@ -230,8 +232,6 @@ void setup() {
     display.clearDisplay();
     display.display();
     
-
-    
     os_thread_create(&neot,NULL,OS_THREAD_PRIORITY_DEFAULT,oledOn,NULL,2048);
     os_mutex_create(&mutex);
     
@@ -252,20 +252,6 @@ void setup() {
     request.port = 80;
     request.path = "/get_all";
 
-    /* OLD THIS IS THE HTTP SETUP
-    //setup request get the battery status
-    request.hostname = "bay4pi.mars.local";
-    request.port = 80;
-    request.path = "/cgi-bin/test.cgi";
-    //setup request get the grid status
-    request2.hostname ="bay4pi.mars.local";
-    request2.port = 80;
-    request2.path = "/cgi-bin/grid_status.cgi";
-    //setup request get the battery charge
-    request3.hostname ="bay4pi.mars.local";
-    request3.port = 80;
-    request3.path = "/cgi-bin/battery_percentage.cgi";
-    */
 }
 
 void loop() {
@@ -278,6 +264,8 @@ void loop() {
     response.body.toCharArray(buffer,sizeof(buffer));
     Serial.println("\nResponse from Server: ");
     Serial.print(buffer);
+
+    //Crappy code follows
     char* token = strtok(buffer, ",");
     //type int
     theData.gridStatus = atoi(token);
@@ -297,34 +285,19 @@ void loop() {
     token = strtok(NULL,",");
     //type float
     theData.temp = strtof(token,NULL);
-    */
+    
     Serial.println("\nCovert to Struct: ");
     Serial.print(theData.gridStatus);
     Serial.print(theData.batteryStatus);
     Serial.print(theData.percentage);
     Serial.print(theData.highUsage);
-    
-     
-    /* OLD THIS IS THE RESPONSE AND HTTP GET CODE
-    // Get requests
-    http.get(request, response, headers);
-    http.get(request2, response2, headers);
-    http.get(request3, response3, headers);
-    //Battery Status (e.g IDLE, CHARGING, DISCHARGE)
-    response.body.toCharArray(buffer,sizeof(buffer));
-    //Grid Status
-    response2.body.toCharArray(buffer2,sizeof(buffer2));
-    //Battery Percentage
-    strcpy(percentString,response3.body);
-    response3.body.toCharArray(buffer3,sizeof(buffer3));
    */ 
-
     //THIS IS WHERE LED LOGIC GETS CONTROLLED
     //Not really doing much here but calling the showBattery function which takes the buffer and does what it needs
     if (theData.gridStatus == 1){
         showBattery("fireCannon", theData.batteryStatus);
     }
-    else if (theData.gridStatus == 0){
+    else if (theData.gridStatus == 0 && theData.percentage != 0){
         //RED LED PANIC ON THE STREETS OF LONDON
         analogWrite(A2, HIGH);
         strcpy(lineOne, "GRID");
@@ -337,9 +310,6 @@ void loop() {
      
     // THIS IS THE RADIO TRANSMIT SECION *****************************************************
      
-    //theData.temp = radio.readTemperature();
-    //theData.nodeId = NODEID;
-    //theData.uptime = System.uptime();
      
     Serial.print("\n."); //THis gives us a neat visual indication of time between messages received
     //Serial.print("test");

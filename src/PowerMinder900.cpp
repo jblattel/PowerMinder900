@@ -53,6 +53,7 @@ typedef struct {
 Payload theData;
 */
 typedef struct {
+  int         sysHour;       //hour of day
   int         gridStatus;    //grid 1 up 2 down
   int         batteryStatus; //battery 1 charging 2 discharging 3 idle 
   int         percentage;    //battery percentage
@@ -283,6 +284,8 @@ void loop() {
     //Crappy code follows
     char* token = strtok(buffer, ",");
     //type int
+    theData.sysHour = atoi(token);
+    token = strtok(NULL,",");
     theData.gridStatus = atoi(token);
     token = strtok(NULL,","); 
     theData.batteryStatus = atoi(token);

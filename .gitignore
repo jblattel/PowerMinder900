@@ -2,7 +2,7 @@
 *.o
 
 # Libraries
-*.lib
+#*.lib (OK)
 
 # Shared objects (inc. Windows DLLs)
 *.dll

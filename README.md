@@ -22,10 +22,12 @@ We need a system that is flexible in many respects:
 6) 900Mhz RFM Radio Tansiever (https://learn.adafruit.com/adafruit-feather-m0-radio-with-rfm69-packet-radio/overview)
 
 Enclosure as required and wirring. Wiring diagram (TO BE ADDED)
+(NEW) - wirring for the 900MHz radio version, changes required because of interupts for radio
 A1 BLUE
-A3 RED
-A2 GREEN
+A2 RED
+A3 GREEN
 D3 MOTION INPUT
+D8 OLED RESET
 OLED is I2C
 
 ## Proposal:

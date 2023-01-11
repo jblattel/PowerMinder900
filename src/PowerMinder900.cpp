@@ -3,7 +3,7 @@
 /******************************************************/
 
 #include "Particle.h"
-#line 1 "c:/PowerMinder/PowerMinder900/src/PowerMinder900.ino"
+#line 1 "/home/jeff/powerwall900/PowerMinder900/src/PowerMinder900.ino"
 void setmsgBuffer(uint8_t textSize);
 void oledOn(void *args);
 void motionDetected(void);
@@ -12,7 +12,7 @@ void fadeOff(unsigned int time,int decreament, pin_t pinnum);
 void showBattery(const char *event ,int data);
 void setup();
 void loop();
-#line 1 "c:/PowerMinder/PowerMinder900/src/PowerMinder900.ino"
+#line 1 "/home/jeff/powerwall900/PowerMinder900/src/PowerMinder900.ino"
 SYSTEM_THREAD(ENABLED);
 
 #include "HttpClient.h"
@@ -184,7 +184,9 @@ void showBattery(const char *event ,int data) {
         strcpy(lineTwo, "DISCHARGE");
     }
     else{
-        //Battery IDLE
+        //BLUE LED
+         //turn off red- can't be blue and red!
+        analogWrite(A2,LOW);
         fadeOn(2000,3,A1);
         fadeOff(2000,3,A1);
         analogWrite(A1,LOW);
@@ -230,7 +232,7 @@ void setup() {
     radio.writeReg(0x03,0x0D); //set bit rate to 9k6
     radio.writeReg(0x04,0x05);
   
-    radio.setPowerLevel(10); // power output ranges from 0 (5dBm) to 31 (20dBm)
+    radio.setPowerLevel(15); // power output ranges from 0 (5dBm) to 31 (20dBm)
                           // Note at 20dBm the radio sources up to 130 mA! 
                          // Selecting a power level between 10 and 15 will use ~30-44 mA which is generally more compatible with Photon power sources
                         // As reference, power level of 10 transmits successfully at least 300 feet with 0% packet loss right through a home, sufficient for most use
@@ -247,7 +249,50 @@ void setup() {
     display.setup(); 
     display.clearDisplay();
     display.display();
-    
+
+    //BLUE LED
+     pinMode(A1, OUTPUT);
+    //RED LED
+    pinMode(A2, OUTPUT);
+    //GREEN LED
+    pinMode(A3, OUTPUT);
+
+    //RUN THROUGH LED COLORS
+//Fire Up the Green LED
+    display.setTextSize(3);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println("GREEN-3");
+    display.display();
+    analogWrite(A3,250);
+    delay(2000);
+    analogWrite(A3,LOW);
+    display.clearDisplay();
+    display.display();
+//Fire up the Blue LED
+    display.setTextSize(3);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println("BLUE-2");
+    display.display();
+    analogWrite(A1,250);
+    delay(2000);
+    analogWrite(A1,LOW);
+    display.clearDisplay();
+    display.display();
+//Fire up the Red LED
+    display.setTextSize(3);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.println("RED-1");
+    display.display();
+    analogWrite(A2,250);
+    delay(2000);
+    analogWrite(A2,LOW);
+    display.clearDisplay();
+    display.display();
+
+    //Thread create
     os_thread_create(&neot,NULL,OS_THREAD_PRIORITY_DEFAULT,oledOn,NULL,2048);
     os_mutex_create(&mutex);
     
@@ -256,12 +301,8 @@ void setup() {
     //INPUT FROM MOTION SENSOR
     pinMode(D3, INPUT);
     attachInterrupt(D3, motionDetected, RISING);
-    //BLUE LED
-    pinMode(A1, OUTPUT);
-    //RED LED
-    pinMode(A2, OUTPUT);
-    //GREEN LED
-    pinMode(A3, OUTPUT);
+ 
+
 
     //NEW TEST GET ALL
     request.hostname = "bay4pi.mars.local";
@@ -295,21 +336,8 @@ void loop() {
     //itoa(theData.percentage, percentString, 10);
     token = strtok(NULL,",");
     theData.highUsage = atoi(token);
-    /* FOR OLDER STRUCT
-    token = strtok(NULL,",");
-    //type long unsigned
-    char * endPtr;
-    theData.uptime = strtoul(token,&endPtr,10);
-    token = strtok(NULL,",");
-    //type float
-    theData.temp = strtof(token,NULL);
     
-    Serial.println("\nCovert to Struct: ");
-    Serial.print(theData.gridStatus);
-    Serial.print(theData.batteryStatus);
-    Serial.print(theData.percentage);
-    Serial.print(theData.highUsage);
-   */ 
+    
     //THIS IS WHERE LED LOGIC GETS CONTROLLED
     //Not really doing much here but calling the showBattery function which takes the buffer and does what it needs
     if (theData.gridStatus == 1){
